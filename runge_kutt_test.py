@@ -2,22 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
-u0 = 1
-u0_2 = 1
-
-err = u0_2 - u0
-S = err / 15
-e = 0.1
-
-h = 0.1
-
-x1 = np.linspace(0, 1)
-
-u = u0 * math.e ** (3 * x1)
-
-x = 0
-x_2 = 0
-
 
 def func_k1(x, u0, h):
     return 3 * u0
@@ -40,69 +24,76 @@ def func_RK(x, u0, h):
 
 
 def RK_Method_Without_ce(N, x, u0, h):
-    listx = []
-    list = []
+    x_list = []
+    y_list = []
     for i in range(N):
-        list.append(u0)
-        listx.append(x)
+        y_list.append(u0)
+        x_list.append(x)
         u0 = func_RK(x, u0, h)
         x = x + h
-    return listx, list
+    return x_list, y_list
 
 
 def RK_Method_halfhope_Without_ce(N, x, u0, h):
+    x_list = []
     list = []
     for i in range(N):
         list.append(u0)
+        x_list.append(x)
         u0 = func_RK(x, u0, h / 2)
         x = x + h / 2
         u0 = func_RK(x, u0, h / 2)
         x = x + h / 2
-    return x, list
+    return x_list, list
 
 
-def RK_Method_With_ce(N, x, x_2, u0, u0_2, e, h):
-    list = []
-    list.append(u0)
-    #for i in range(N):
-    for i in range(N):
-        tmp_x = x
-        tmp_x_2 = x_2
-        tmp_u0 = u0
-        tmp_u0_2 = u0_2
-        u0 = func_RK(x, u0, h)
-        x = x + h
-        u0_2 = func_RK(x, u0_2, h / 2)
-        x_2 = x_2 + h / 2
-        u0_2 = func_RK(x, u0_2, h / 2)
-        x_2 = x_2 + h / 2
-        S = (u0_2 - u0)/15
-        if abs(S) <= e and abs(S) >= e/32:
-            list.append(u0)
-            continue
-        if abs(S) < e/32:
-            h = 2*h
-            list.append(u0)
-            continue
-        if abs(S) > e:
-            u0 = tmp_u0
-            u0_2 = tmp_u0_2
-            x = tmp_x
-            x_2 = tmp_x_2
-            h = h/2
-            continue
+def RK_Method_With_ce(N, X0, U0, h, eps):
+    b = 5
+    i = 1
+    c1 = 0
+    c2 = 0
+    List = [[X0, U0, 0, 0, h, c1, c2]]
+    while (i < N):
+        y1 = func_RK(List[-1][0], List[-1][1], h)
+        x1 = List[-1][0] + h
 
-    return x, list
+        y2 = func_RK(List[-1][0], List[-1][1], h / 2)
+        x2 = List[-1][0] + h / 2
+        y2 = func_RK(x2, y2, h / 2)
+        x2 = x2 + h / 2
+
+        s = (y2 - y1) / (2 ** 4 - 1)
+        if (eps / (2 ** 5) <= abs(s)) and (abs(s) <= eps):
+            List.append([x1, y1, y1 - y2, s, h, c1, c1])
+        else:
+            if (abs(s) < eps / (2 ** 5)):
+                c2 += 1
+                h = 2 * h
+                List.append([X0, U0, U0 - y2, s, h, c1, c1])
+            else:
+                h = h / 2
+                c1 += 1
+        i += 1
+
+    x_list = []
+    y_list = []
+    h_list = []
+    y1y2_list = []
+    S_list = []
+    c1_list = []
+    c2_list = []
+
+    j = 0
+    while j != len(List):
+        x_list.append(List[j][0])
+        y_list.append(List[j][1])
+        h_list.append(List[j][4])
+        y1y2_list.append(List[j][2])
+        S_list.append(List[j][3])
+        c1_list.append(List[j][5])
+        c2_list.append(List[j][6])
+        j += 1
+
+    return x_list, y_list, h_list, y1y2_list, S_list, c1_list, c2_list
 
 
-#print(RK_Method_With_ce(1000,x,x_2,u0,u0_2,e,h)[0],'\n',RK_Method_With_ce(10000,x,x_2,u0,u0_2,e,h)[0], RK_Method_With_ce(1000,x,x_2,u0,u0_2,e,h)[0] - RK_Method_With_ce(10000,x,x_2,u0,u0_2,e,h)[0])
-
-#print(RK_Method_Without_ce(100, x, u0, h)[1])
-
-x = np.linspace(0, round(RK_Method_halfhope_Without_ce(100, x, u0, h)[0]), round(RK_Method_halfhope_Without_ce(100, x, u0, h)[0]*int(1/h)))
-plt.plot(RK_Method_halfhope_Without_ce(100,x,u0,h)[0], RK_Method_Without_ce(100, x, u0, h)[1], 'r')
-plt.plot(RK_Method_halfhope_Without_ce(100, x, u0, h)[0], RK_Method_halfhope_Without_ce(100, x, u0, h)[1], 'y')
-
-#plt.plot(x1, u, 'g')
-
-#plt.show()
