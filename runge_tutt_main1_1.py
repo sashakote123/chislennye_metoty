@@ -47,3 +47,7 @@ def RK_Method_halfhope_Without_ce_main_1(N,x0,u0,h):
         u0 = rk_4(x0,u0, h/2)[1]
     return listx, list
 
+
+plt.axis([0,5,0,10])
+plt.plot(RK_Method_Without_ce_main_1(10000, 0, 0.2, 0.001)[0],RK_Method_Without_ce_main_1(10000, 0, 0.2, 0.001)[1])
+#plt.show()

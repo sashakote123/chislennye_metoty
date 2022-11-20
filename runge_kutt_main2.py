@@ -1,6 +1,9 @@
 import math
 import matplotlib.pyplot as plt
 import numpy as np
+import pylab as pl
+
+
 class RK:
     def __init__(self, a, u0, dudt0, h = 0.0001, control = False, e = 0):
         self.a = a
@@ -16,6 +19,7 @@ class RK:
         self.s = 0
         self.xs = []
         self.us = []
+        self.dudts = []
     def f2(self, x, u1, u2):
         return -self.a * math.sqrt(u2 ** 2 + 1)
     def f1(self, x, u1, u2):
@@ -41,6 +45,7 @@ class RK:
             self.x += h
             self.xs.append(self.x)
             self.us.append(self.u)
+            self.dudts.append(self.dudt)
     def ctrl(self):
         x = self.x
         u = self.u
@@ -87,6 +92,7 @@ class RK:
             self.u = u1
             self.xs.append(self.x)
             self.us.append(self.u)
+            self.dudts.append(self.dudt)
             self.dudt = dudt1
             if (self.s < e / 32):
                 self.h *= 2
@@ -94,9 +100,7 @@ class RK:
     def get_data(self):
         return [self.x, self.u, self.ud2, self.u - self.ud2, self.s, self.h, self.C1, self.C2]
     def get_allxu(self):
-        return (self.xs, self.us)
-# Пример использования
-
+        return (self.xs, self.us, self.dudts)
 
 
 def RK_Method_Without_ce_main_2(N,x0,u0,h):
@@ -154,3 +158,35 @@ def RK_Method_With_ce_main_2(N,X0, U0, h, e):
             #break
     return x_list, y_list, h_list, y1y2_list, S_list, c1_list, c2_list
 
+
+
+def plot_graph(N, X0, U0, h, eps):
+    cl = RK(X0, U0, 1, control = True, e = eps)
+    for i in range(N):
+        cl.step()
+        s = cl.get_data()
+        #print(s)
+        if (s[0] > 5):
+            break
+    x, u, dudt = cl.get_allxu()
+    #print(x)
+    #print(u)
+    #print(dudt)
+
+
+    pl.subplot(131)
+    pl.plot(x,u)
+    plt.title("U1/x")
+    plt.xlabel('U1')
+    plt.ylabel('X')
+    pl.subplot(132)
+    pl.plot(x,dudt)
+    plt.title("U2/x")
+    plt.xlabel('U1')
+    plt.ylabel('X')
+    pl.subplot(133)
+    pl.plot(u,dudt)
+    plt.title("U1/U2")
+    plt.xlabel('U1')
+    plt.ylabel('U2')
+    plt.show()
