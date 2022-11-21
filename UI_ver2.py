@@ -24,7 +24,7 @@ class PlotWidget(QWidget):
     h = 0.001
     eps = 0.000001
 
-    x_lim = 5
+    x_lim = 4
     y_lim = 10
 
     def set_N(self, N):
